@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>
+        debouncing
+    </title>
+    <style>
+        h1{
+            text-align: center;
+        }
+        
+        input {
+            width: 300px;
+            padding: 10px;
+            font-size: 20px;
+            
+
+        }
+
+        #chra {
+            padding: 10px;
+            max-height: 250px;
+            width: 300px;
+            border: 2px solid black;
+            overflow: scroll;
+            z-index: 10;
+            display: none;
+            font-size: 20px;
+        }
+        #chra>p{
+            cursor: pointer;
+        }
+        #chra>p:hover{
+            color: red;
+        }
+        .center{
+            width: 324px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+    </style>
+</head>
+
+<body>
+    <h1>Star Wars</h1>
+    <div class="center">
+        <input oninput="throttleFn()" type="text" id="query" />
+        <div id="chra"></div>
+    </div>
+    
+</body>
+
+</html>
+<script>
+
+    let charDiv = document.getElementById("chra");
+    var timerId;
+
+    async function searchChar() {
+        let query = document.getElementById("query").value;
+        if(query.length==0) return
+        let res = await fetch(`https://swapi.dev/api/people/?search=${query}`);
+        let data = await res.json();
+        console.log(data);
+        return data.results;
+    }
+
+    function throttleFn() {
+
+        if (timerId) {                     //Why?? undefined timer id is false Hence 1st time it will go down;
+            return false;
+        }
+
+        timerId = setTimeout(() => {      //settimeout to delay request//After the first timerId is given a number, it will not come here due to the above if
+            main();
+            timerId = undefined;         //Why??//Because Only one timeout remains. After it is excuted we make the timerId undefined for the next search.
+        }, 1000);
+
+        // console.log("time", timerId);
+        //main();
+    }
+
+
+
+    function appendChar(d) {
+        charDiv.innerHTML = null;
+        d.forEach(({ name }) => {
+            let p = document.createElement("p");
+            p.innerHTML = name;
+            charDiv.append(p);
+        });
+        charDiv.style.display = "block";
+    }
+
+
+
+    async function main() {
+        let char = await searchChar();
+        console.log("Characters:",char);
+        if(char==undefined){
+            charDiv.style.display = "none";
+            return;
+        } ;
+        if(char.length==0){
+            charDiv.style.display = "none";
+            return;
+        } 
+
+        appendChar(char);
+
+    }
+
+
+</script>
